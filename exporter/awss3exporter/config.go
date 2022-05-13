@@ -35,7 +35,7 @@ type Config struct {
 
 	FileFormat string           `mapstructure:"file_format"`
 	S3Uploader S3UploaderConfig `mapstructure:"s3uploader"`
-
+        BatchCount int64            `mapstructure:"batch_count"`
 	// MetricDescriptors is the list of override metric descriptors
 	MetricDescriptors []MetricDescriptor `mapstructure:"metric_descriptors"`
 

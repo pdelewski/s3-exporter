@@ -30,6 +30,7 @@ import (
 	"github.com/open-telemetry/opentelemetry-collector-contrib/exporter/awsemfexporter"
 	"github.com/open-telemetry/opentelemetry-collector-contrib/exporter/awskinesisexporter"
 	"github.com/open-telemetry/opentelemetry-collector-contrib/exporter/awsprometheusremotewriteexporter"
+        "github.com/open-telemetry/opentelemetry-collector-contrib/exporter/awss3exporter"
 	"github.com/open-telemetry/opentelemetry-collector-contrib/exporter/awsxrayexporter"
 	"github.com/open-telemetry/opentelemetry-collector-contrib/exporter/azuremonitorexporter"
 	"github.com/open-telemetry/opentelemetry-collector-contrib/exporter/carbonexporter"
@@ -253,6 +254,7 @@ func Components() (component.Factories, error) {
 		awsemfexporter.NewFactory(),
 		awskinesisexporter.NewFactory(),
 		awsprometheusremotewriteexporter.NewFactory(),
+		awss3exporter.NewFactory(),
 		awsxrayexporter.NewFactory(),
 		azuremonitorexporter.NewFactory(),
 		carbonexporter.NewFactory(),

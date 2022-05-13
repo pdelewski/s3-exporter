@@ -15,7 +15,7 @@
 package awss3exporter
 
 import (
-	"crypto/rand"
+	"math/rand"
 	"fmt"
 	"strconv"
 	"time"

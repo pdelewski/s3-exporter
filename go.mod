@@ -185,6 +185,7 @@ require (
 	github.com/alecthomas/units v0.0.0-20211218093645-b94a6e3cc137 // indirect
 	github.com/aliyun/aliyun-log-go-sdk v0.1.33 // indirect
 	github.com/antonmedv/expr v1.9.0 // indirect
+	github.com/apache/arrow/go/arrow v0.0.0-20200730104253-651201b0f516 // indirect
 	github.com/apache/thrift v0.16.0 // indirect
 	github.com/armon/go-metrics v0.3.10 // indirect
 	github.com/avast/retry-go v3.0.0+incompatible // indirect
@@ -361,6 +362,7 @@ require (
 	github.com/nginxinc/nginx-prometheus-exporter v0.8.1-0.20201110005315-f5a5f8086c19 // indirect
 	github.com/observiq/ctimefmt v1.0.0 // indirect
 	github.com/olivere/elastic v6.2.37+incompatible // indirect
+	github.com/open-telemetry/opentelemetry-collector-contrib/exporter/awss3exporter v0.0.0-00010101000000-000000000000 // indirect
 	github.com/open-telemetry/opentelemetry-collector-contrib/extension/observer v0.51.0 // indirect
 	github.com/open-telemetry/opentelemetry-collector-contrib/internal/aws/awsutil v0.51.0 // indirect
 	github.com/open-telemetry/opentelemetry-collector-contrib/internal/aws/containerinsight v0.51.0 // indirect
@@ -400,6 +402,7 @@ require (
 	github.com/pelletier/go-toml v1.9.4 // indirect
 	github.com/philhofer/fwd v1.1.1 // indirect
 	github.com/pierrec/lz4 v2.6.1+incompatible // indirect
+	github.com/pierrec/lz4/v4 v4.1.14 // indirect
 	github.com/pkg/errors v0.9.1 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
 	github.com/power-devops/perfstat v0.0.0-20210106213030-5aafc221ea8c // indirect
@@ -455,6 +458,8 @@ require (
 	github.com/xdg-go/pbkdf2 v1.0.0 // indirect
 	github.com/xdg-go/scram v1.1.1 // indirect
 	github.com/xdg-go/stringprep v1.0.3 // indirect
+	github.com/xitongsys/parquet-go v1.6.2 // indirect
+	github.com/xitongsys/parquet-go-source v0.0.0-20220315005136-aec0fe3e777c // indirect
 	github.com/youmark/pkcs8 v0.0.0-20181117223130-1be2e3e5546d // indirect
 	github.com/yusufpapurcu/wmi v1.2.2 // indirect
 	go.elastic.co/apm v1.15.0 // indirect
@@ -851,3 +856,5 @@ retract v0.37.0 // Contains dependencies on v0.36.0 components, which should hav
 
 // see https://github.com/distribution/distribution/issues/3590
 exclude github.com/docker/distribution v2.8.0+incompatible
+
+replace github.com/open-telemetry/opentelemetry-collector-contrib/exporter/awss3exporter => ./exporter/awss3exporter
