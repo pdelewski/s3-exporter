@@ -23,11 +23,15 @@ import (
 	"github.com/aws/aws-sdk-go/service/s3/s3manager"
 )
 
+const (
+	jsonFormat = "json"
+)
+
 func writeJson(e *S3Exporter, buf []byte, config *Config) error {
 
 	key := e.getS3Key(config.S3Uploader.S3Bucket,
 		config.S3Uploader.S3Prefix, config.S3Uploader.S3Partition,
-		config.S3Uploader.FilePrefix, "json")
+		config.S3Uploader.FilePrefix, jsonFormat)
 
 	// create a reader from data data in memory
 	reader := bytes.NewReader(buf)

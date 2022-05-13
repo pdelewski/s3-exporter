@@ -24,6 +24,10 @@ import (
 	"go.uber.org/zap"
 )
 
+const (
+	parquetFormat = "parquet"
+)
+
 // read input schema file and parse it to json structure
 func (e *S3Exporter) parseParquetInputSchema() (string, error) {
 	content, err := ioutil.ReadFile("./schema/parquet_input_schema")
@@ -49,7 +53,7 @@ func (e *S3Exporter) parseParquetOutputSchema() (string, error) {
 func (e *S3Exporter) writeParquet(metrics []*ParquetMetric, ctx context.Context, config *Config) {
 
 	key := e.getS3Key(config.S3Uploader.S3Bucket, config.S3Uploader.S3Prefix,
-		config.S3Uploader.S3Partition, config.S3Uploader.FilePrefix, config.FileFormat)
+		config.S3Uploader.S3Partition, config.S3Uploader.FilePrefix, parquetFormat)
 
 	// create new S3 file writer
 	fw, err := s3.NewS3FileWriter(ctx, config.S3Uploader.S3Bucket, key, "bucket-owner-full-control", nil, &aws.Config{

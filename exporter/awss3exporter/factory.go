@@ -46,6 +46,7 @@ func createDefaultConfig() config.Exporter {
 			S3Partition: "minute",
 		},
 
+		BatchCount:        1000,
 		MetricDescriptors: make([]MetricDescriptor, 0),
 		logger:            nil,
 	}
