@@ -1,4 +1,4 @@
-// Copyright 2022 OpenTelemetry Authors
+// Copyright 2021 OpenTelemetry Authors
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -21,6 +21,7 @@ import (
 	"go.opentelemetry.io/collector/component"
 	"go.opentelemetry.io/collector/config"
 	"go.opentelemetry.io/collector/consumer"
+	"go.opentelemetry.io/collector/pdata/pcommon"
 	"go.opentelemetry.io/collector/pdata/plog"
 	"go.opentelemetry.io/collector/pdata/pmetric"
 	"go.opentelemetry.io/collector/pdata/ptrace"
@@ -66,15 +67,52 @@ func (e *S3Exporter) Start(ctx context.Context, host component.Host) error {
 }
 
 func (e *S3Exporter) ConsumeMetrics(ctx context.Context, md pmetric.Metrics) error {
+	rms := md.ResourceMetrics()
+	labels := map[string]string{}
+
+	for i := 0; i < rms.Len(); i++ {
+		rm := rms.At(i)
+		am := rm.Resource().Attributes()
+		if am.Len() > 0 {
+			am.Range(func(k string, v pcommon.Value) bool {
+				labels[k] = v.StringVal()
+				return true
+			})
+		}
+	}
+
+	e.logger.Info("Processing resource metrics", zap.Any("labels", labels))
+
+	expConfig := e.config.(*Config)
+	var parquetMetrics []*ParquetMetric
+
+	for i := 0; i < rms.Len(); i++ {
+		rm := rms.At(i)
+		e.metricTranslator.translateOTelToParquetMetric(&rm, &parquetMetrics, expConfig)
+	}
+
+	e.writeParquet(parquetMetrics, ctx, expConfig)
 	return nil
 }
 
 func (e *S3Exporter) ConsumeLogs(ctx context.Context, logs plog.Logs) error {
-	return nil
+	buf, err := logsMarshaler.MarshalLogs(logs)
+	if err != nil {
+		return err
+	}
+	expConfig := e.config.(*Config)
+
+	return writeJson(e, buf, expConfig)
 }
 
 func (e *S3Exporter) ConsumeTraces(ctx context.Context, traces ptrace.Traces) error {
-	return nil
+	buf, err := traceMarshaler.MarshalTraces(traces)
+	if err != nil {
+		return err
+	}
+	expConfig := e.config.(*Config)
+
+	return writeJson(e, buf, expConfig)
 }
 
 func (e *S3Exporter) Shutdown(context.Context) error {
