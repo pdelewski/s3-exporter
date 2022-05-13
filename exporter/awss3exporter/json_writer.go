@@ -16,7 +16,6 @@ package awss3exporter
 
 import (
 	"bytes"
-	"fmt"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
@@ -39,6 +38,11 @@ func writeJson(e *S3Exporter, buf []byte, config *Config) error {
 	sess, err := session.NewSession(&aws.Config{
 		Region: aws.String(config.S3Uploader.Region)},
 	)
+
+	if err != nil {
+		e.logger.Error("Uploading to S3 : " + err.Error())
+	}
+
 	uploader := s3manager.NewUploader(sess)
 
 	_, err = uploader.Upload(&s3manager.UploadInput{
@@ -47,8 +51,7 @@ func writeJson(e *S3Exporter, buf []byte, config *Config) error {
 		Body:   reader,
 	})
 	if err != nil {
-		fmt.Printf("Unable to upload %q to %q, %v", key, config.S3Uploader.S3Bucket, err)
-		e.logger.Error("Uploading to S3")
+		e.logger.Error("Uploading to S3 : " + err.Error())
 	}
 
 	return nil
