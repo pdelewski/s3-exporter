@@ -66,7 +66,7 @@ func (e *S3Exporter) Start(ctx context.Context, host component.Host) error {
 	return nil
 }
 
-func (e *S3Exporter) ConsumeMetrics(ctx context.Context, md pmetric.Metrics) error {
+func (e *S3Exporter) dumpLabels(md pmetric.Metrics) {
 	rms := md.ResourceMetrics()
 	labels := map[string]string{}
 
@@ -82,6 +82,11 @@ func (e *S3Exporter) ConsumeMetrics(ctx context.Context, md pmetric.Metrics) err
 	}
 
 	e.logger.Info("Processing resource metrics", zap.Any("labels", labels))
+}
+
+func (e *S3Exporter) ConsumeMetrics(ctx context.Context, md pmetric.Metrics) error {
+	e.dumpLabels(md)
+	rms := md.ResourceMetrics()
 
 	expConfig := e.config.(*Config)
 	var parquetMetrics []*ParquetMetric
