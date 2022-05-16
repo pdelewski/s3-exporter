@@ -42,6 +42,7 @@ import (
 var testTimestamp = pcommon.Timestamp(time.Date(2021, 07, 16, 12, 30, 0, 0, time.UTC).UnixNano())
 
 func Test_exporter_PushMetricsData(t *testing.T) {
+	fmt.Println("Test_pushmetrics")
 	sent := "not sent"
 	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		bodyBytes, _ := ioutil.ReadAll(r.Body)

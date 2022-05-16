@@ -1,4 +1,4 @@
-// Copyright 2022, OpenTelemetry Authors
+// Copyright 2022 OpenTelemetry Authors
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -14,21 +14,9 @@
 
 package awss3exporter
 
-import (
-	"fmt"
-	"go.opentelemetry.io/collector/pdata/pmetric"
-	"testing"
-	"github.com/stretchr/testify/assert"
+import "context"
 
-)
-
-func TestTranslateMetricsData(t *testing.T) {
-	fmt.Println("translateMetricsData")
-	md := pmetric.NewMetrics()
-	md.ResourceMetrics().EnsureCapacity(2)
-	rm := md.ResourceMetrics().AppendEmpty()
-	ilms := rm.ScopeMetrics()
-	ilms.EnsureCapacity(2)
-	assert.NotNil(t, md, "failed to create metrics")
-	
+type DataWriter interface {
+	WriteJson(buf []byte, config *Config) error
+	WriteParquet(metrics []*ParquetMetric, ctx context.Context, config *Config) error
 }

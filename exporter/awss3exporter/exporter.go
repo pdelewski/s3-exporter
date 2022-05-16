@@ -34,6 +34,7 @@ var traceMarshaler = ptrace.NewJSONMarshaler()
 type S3Exporter struct {
 	config           config.Exporter
 	metricTranslator metricTranslator
+	dataWriter       DataWriter
 	logger           *zap.Logger
 }
 
@@ -53,6 +54,7 @@ func NewS3Exporter(config config.Exporter,
 	s3Exporter := &S3Exporter{
 		config:           config,
 		metricTranslator: newMetricTranslator(*expConfig),
+		dataWriter:       &S3Writer{},
 		logger:           logger,
 	}
 	return s3Exporter, nil
@@ -96,7 +98,7 @@ func (e *S3Exporter) ConsumeMetrics(ctx context.Context, md pmetric.Metrics) err
 		e.metricTranslator.translateOTelToParquetMetric(&rm, &parquetMetrics, expConfig)
 	}
 
-	e.writeParquet(parquetMetrics, ctx, expConfig)
+	e.dataWriter.WriteParquet(parquetMetrics, ctx, expConfig)
 	return nil
 }
 
@@ -107,7 +109,7 @@ func (e *S3Exporter) ConsumeLogs(ctx context.Context, logs plog.Logs) error {
 	}
 	expConfig := e.config.(*Config)
 
-	return writeJson(e, buf, expConfig)
+	return e.dataWriter.WriteJson(buf, expConfig)
 }
 
 func (e *S3Exporter) ConsumeTraces(ctx context.Context, traces ptrace.Traces) error {
@@ -117,7 +119,7 @@ func (e *S3Exporter) ConsumeTraces(ctx context.Context, traces ptrace.Traces) er
 	}
 	expConfig := e.config.(*Config)
 
-	return writeJson(e, buf, expConfig)
+	return e.dataWriter.WriteJson(buf, expConfig)
 }
 
 func (e *S3Exporter) Shutdown(context.Context) error {
