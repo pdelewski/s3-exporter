@@ -32,8 +32,9 @@ type TestWriter struct {
 
 func (testWriter *TestWriter) WriteParquet(metrics []*ParquetMetric, ctx context.Context, config *Config) error {
 	assert.Equal(testWriter.t, 1, len(metrics))
-	_, found := metrics[0].Metrics["int_sum"]
-	assert.Equal(testWriter.t, found, true)
+	_, foundMetric := metrics[0].Metrics["int_sum"]
+	assert.Equal(testWriter.t, true, foundMetric)
+	assert.Equal(testWriter.t, metrics[0].Metrics["int_sum"].Value.(float64), float64(10))
 	return nil
 }
 
