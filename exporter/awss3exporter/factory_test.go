@@ -16,12 +16,11 @@ package awss3exporter
 
 import (
 	"context"
-	"testing"
-	"fmt"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"go.opentelemetry.io/collector/component/componenttest"
 	"go.opentelemetry.io/collector/config/configtest"
+	"testing"
 )
 
 func TestCreateDefaultConfig(t *testing.T) {
@@ -31,7 +30,6 @@ func TestCreateDefaultConfig(t *testing.T) {
 }
 
 func TestCreateMetricsExporter(t *testing.T) {
-	fmt.Println("FactoryTest")
 	cfg := createDefaultConfig()
 	exp, err := createMetricsExporter(
 		context.Background(),
