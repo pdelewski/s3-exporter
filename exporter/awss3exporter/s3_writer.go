@@ -33,6 +33,7 @@ import (
 const (
 	jsonFormat    = "json"
 	parquetFormat = "parquet"
+	genericFormat = "txt"
 )
 
 type S3Writer struct {
@@ -83,7 +84,7 @@ func (s3writer *S3Writer) parseParquetOutputSchema() (string, error) {
 	return string(content), nil
 }
 
-func (s3writer *S3Writer) WriteJson(buf []byte, config *Config) error {
+func (s3writer *S3Writer) WriteBuffer(buf []byte, ctx context.Context, config *Config) error {
 	key := getS3Key(config.S3Uploader.S3Bucket,
 		config.S3Uploader.S3Prefix, config.S3Uploader.S3Partition,
 		config.S3Uploader.FilePrefix, jsonFormat)

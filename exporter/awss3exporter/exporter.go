@@ -28,14 +28,12 @@ import (
 	"go.uber.org/zap"
 )
 
-var logsMarshaler = plog.NewJSONMarshaler()
-var traceMarshaler = ptrace.NewJSONMarshaler()
-
 type S3Exporter struct {
 	config           config.Exporter
 	metricTranslator metricTranslator
 	dataWriter       DataWriter
 	logger           *zap.Logger
+	marshaler        Marshaler
 }
 
 func NewS3Exporter(config config.Exporter,
@@ -51,11 +49,18 @@ func NewS3Exporter(config config.Exporter,
 
 	expConfig.Validate()
 
+	// TODO take marshaler from config
+	marshaler, err := NewMarshaler("sumo_ic")
+	if err != nil {
+		return nil, errors.New("unknown marshaler")
+	}
+
 	s3Exporter := &S3Exporter{
 		config:           config,
 		metricTranslator: newMetricTranslator(*expConfig),
 		dataWriter:       &S3Writer{},
 		logger:           logger,
+		marshaler:        marshaler,
 	}
 	return s3Exporter, nil
 }
@@ -103,23 +108,24 @@ func (e *S3Exporter) ConsumeMetrics(ctx context.Context, md pmetric.Metrics) err
 }
 
 func (e *S3Exporter) ConsumeLogs(ctx context.Context, logs plog.Logs) error {
-	buf, err := logsMarshaler.MarshalLogs(logs)
+	buf, err := e.marshaler.MarshalLogs(logs)
+
 	if err != nil {
 		return err
 	}
 	expConfig := e.config.(*Config)
 
-	return e.dataWriter.WriteJson(buf, expConfig)
+	return e.dataWriter.WriteBuffer(buf, ctx, expConfig)
 }
 
 func (e *S3Exporter) ConsumeTraces(ctx context.Context, traces ptrace.Traces) error {
-	buf, err := traceMarshaler.MarshalTraces(traces)
+	buf, err := e.marshaler.MarshalTraces(traces)
 	if err != nil {
 		return err
 	}
 	expConfig := e.config.(*Config)
 
-	return e.dataWriter.WriteJson(buf, expConfig)
+	return e.dataWriter.WriteBuffer(buf, ctx, expConfig)
 }
 
 func (e *S3Exporter) Shutdown(context.Context) error {
