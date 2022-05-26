@@ -102,8 +102,7 @@ func (e *S3Exporter) ConsumeMetrics(ctx context.Context, md pmetric.Metrics) err
 		rm := rms.At(i)
 		e.metricTranslator.translateOTelToParquetMetric(&rm, &parquetMetrics, expConfig)
 	}
-
-	e.dataWriter.WriteParquet(parquetMetrics, ctx, expConfig)
+	e.dataWriter.WriteParquet(parquetMetrics, ctx, expConfig, "metrics", "parquet")
 	return nil
 }
 
@@ -115,7 +114,7 @@ func (e *S3Exporter) ConsumeLogs(ctx context.Context, logs plog.Logs) error {
 	}
 	expConfig := e.config.(*Config)
 
-	return e.dataWriter.WriteBuffer(buf, ctx, expConfig)
+	return e.dataWriter.WriteBuffer(buf, ctx, expConfig, "logs", e.marshaler.Format())
 }
 
 func (e *S3Exporter) ConsumeTraces(ctx context.Context, traces ptrace.Traces) error {
@@ -125,7 +124,7 @@ func (e *S3Exporter) ConsumeTraces(ctx context.Context, traces ptrace.Traces) er
 	}
 	expConfig := e.config.(*Config)
 
-	return e.dataWriter.WriteBuffer(buf, ctx, expConfig)
+	return e.dataWriter.WriteBuffer(buf, ctx, expConfig, "traces", e.marshaler.Format())
 }
 
 func (e *S3Exporter) Shutdown(context.Context) error {

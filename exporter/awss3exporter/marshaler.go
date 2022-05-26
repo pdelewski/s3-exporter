@@ -11,25 +11,12 @@ import (
 type Marshaler interface {
 	MarshalTraces(td ptrace.Traces) ([]byte, error)
 	MarshalLogs(ld plog.Logs) ([]byte, error)
+	Format() string
 }
 
 var (
 	ErrUnknownMarshaler = errors.New("unknown marshaler")
 )
-
-type S3Marshaler struct {
-	logsMarshaler   plog.Marshaler
-	tracesMarshaler ptrace.Marshaler
-	logger          *zap.Logger
-}
-
-func (marshaler *S3Marshaler) MarshalTraces(td ptrace.Traces) ([]byte, error) {
-	return marshaler.tracesMarshaler.MarshalTraces(td)
-}
-
-func (marshaler *S3Marshaler) MarshalLogs(ld plog.Logs) ([]byte, error) {
-	return marshaler.logsMarshaler.MarshalLogs(ld)
-}
 
 func NewMarshaler(name string, logger *zap.Logger) (Marshaler, error) {
 	marshaler := &S3Marshaler{logger: logger}
@@ -37,12 +24,15 @@ func NewMarshaler(name string, logger *zap.Logger) (Marshaler, error) {
 	case "otlp", "otlp_proto":
 		marshaler.logsMarshaler = plog.NewProtoMarshaler()
 		marshaler.tracesMarshaler = ptrace.NewProtoMarshaler()
+		marshaler.format = "proto"
 	case "otlp_json":
 		marshaler.logsMarshaler = plog.NewJSONMarshaler()
 		marshaler.tracesMarshaler = ptrace.NewJSONMarshaler()
+		marshaler.format = "json"
 	case "sumo_ic":
-		marshaler.logsMarshaler = NewSumoICLogsMarshaler()
-		marshaler.tracesMarshaler = NewSumoICTracesMarshaler()
+		marshaler.logsMarshaler = NewSumoICMarshaler()
+		marshaler.tracesMarshaler = NewSumoICMarshaler()
+		marshaler.format = "txt"
 	default:
 		return nil, ErrUnknownMarshaler
 	}
