@@ -1,7 +1,13 @@
 package awss3exporter
 
 import (
+	"bytes"
+	"fmt"
+	"strconv"
+	"strings"
+
 	"github.com/scaleway/scaleway-sdk-go/logger"
+	"go.opentelemetry.io/collector/pdata/pcommon"
 	"go.opentelemetry.io/collector/pdata/plog"
 	"go.opentelemetry.io/collector/pdata/ptrace"
 )
@@ -17,8 +23,59 @@ func NewSumoICTracesMarshaler() SumoICTracesMarshaler {
 	return SumoICTracesMarshaler{}
 }
 
+func logEntry(buf *bytes.Buffer, format string, a ...interface{}) {
+	buf.WriteString(fmt.Sprintf(format, a...))
+	buf.WriteString("\n")
+}
+
+func attributeValueToString(v pcommon.Value) string {
+	switch v.Type() {
+	case pcommon.ValueTypeString:
+		return v.StringVal()
+	case pcommon.ValueTypeBool:
+		return strconv.FormatBool(v.BoolVal())
+	case pcommon.ValueTypeDouble:
+		return strconv.FormatFloat(v.DoubleVal(), 'f', -1, 64)
+	case pcommon.ValueTypeInt:
+		return strconv.FormatInt(v.IntVal(), 10)
+	case pcommon.ValueTypeSlice:
+		return sliceToString(v.SliceVal())
+	case pcommon.ValueTypeMap:
+		return mapToString(v.MapVal())
+	default:
+		return fmt.Sprintf("<Unknown OpenTelemetry attribute value type %q>", v.Type())
+	}
+}
+
+func sliceToString(s pcommon.Slice) string {
+	var b strings.Builder
+	b.WriteByte('[')
+	for i := 0; i < s.Len(); i++ {
+		if i < s.Len()-1 {
+			fmt.Fprintf(&b, "%s, ", attributeValueToString(s.At(i)))
+		} else {
+			b.WriteString(attributeValueToString(s.At(i)))
+		}
+	}
+
+	b.WriteByte(']')
+	return b.String()
+}
+
+func mapToString(m pcommon.Map) string {
+	var b strings.Builder
+	b.WriteString("{\n")
+
+	m.Sort().Range(func(k string, v pcommon.Value) bool {
+		fmt.Fprintf(&b, "     -> %s: %s(%s)\n", k, v.Type(), v.AsString())
+		return true
+	})
+	b.WriteByte('}')
+	return b.String()
+}
+
 func (SumoICLogsMarshaler) MarshalLogs(ld plog.Logs) ([]byte, error) {
-	buf := dataBuffer{}
+	buf := bytes.Buffer{}
 	rls := ld.ResourceLogs()
 	for i := 0; i < rls.Len(); i++ {
 		rl := rls.At(i)
@@ -42,12 +99,12 @@ func (SumoICLogsMarshaler) MarshalLogs(ld plog.Logs) ([]byte, error) {
 				if exists == false {
 					logger.Errorf("_sourceName attribute does not exists")
 				}
-				buf.logEntry("{\"data\": \"%s\",\"sourceName\":\"%s\",\"sourceHost\":\"%s\",\"sourceCategory\":\"%s\",\"fields\":{},\"message\":\"%s\"}",
+				logEntry(&buf, "{\"data\": \"%s\",\"sourceName\":\"%s\",\"sourceHost\":\"%s\",\"sourceCategory\":\"%s\",\"fields\":{},\"message\":\"%s\"}",
 					dateVal, attributeValueToString(sourceName), attributeValueToString(sourceHost), attributeValueToString(sourceCategory), body)
 			}
 		}
 	}
-	return buf.buf.Bytes(), nil
+	return buf.Bytes(), nil
 }
 
 func (SumoICTracesMarshaler) MarshalTraces(traces ptrace.Traces) ([]byte, error) {
