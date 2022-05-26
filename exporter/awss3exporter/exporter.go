@@ -50,7 +50,7 @@ func NewS3Exporter(config config.Exporter,
 	expConfig.Validate()
 
 	// TODO take marshaler from config
-	marshaler, err := NewMarshaler("sumo_ic")
+	marshaler, err := NewMarshaler("sumo_ic", logger)
 	if err != nil {
 		return nil, errors.New("unknown marshaler")
 	}

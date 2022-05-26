@@ -5,6 +5,7 @@ import (
 
 	"go.opentelemetry.io/collector/pdata/plog"
 	"go.opentelemetry.io/collector/pdata/ptrace"
+	"go.uber.org/zap"
 )
 
 type Marshaler interface {
@@ -19,6 +20,7 @@ var (
 type S3Marshaler struct {
 	logsMarshaler   plog.Marshaler
 	tracesMarshaler ptrace.Marshaler
+	logger          *zap.Logger
 }
 
 func (marshaler *S3Marshaler) MarshalTraces(td ptrace.Traces) ([]byte, error) {
@@ -29,8 +31,8 @@ func (marshaler *S3Marshaler) MarshalLogs(ld plog.Logs) ([]byte, error) {
 	return marshaler.logsMarshaler.MarshalLogs(ld)
 }
 
-func NewMarshaler(name string) (Marshaler, error) {
-	marshaler := &S3Marshaler{}
+func NewMarshaler(name string, logger *zap.Logger) (Marshaler, error) {
+	marshaler := &S3Marshaler{logger: logger}
 	switch name {
 	case "otlp", "otlp_proto":
 		marshaler.logsMarshaler = plog.NewProtoMarshaler()
