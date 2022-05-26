@@ -75,16 +75,22 @@ func mapToString(m pcommon.Map) string {
 	return b.String()
 }
 
+const (
+	SourceCategoryKey = "_sourceCategory"
+	SourceHostKey     = "_sourceHost"
+	SourceNameKey     = "log.file.path_resolved"
+)
+
 func (SumoICMarshaler) MarshalLogs(ld plog.Logs) ([]byte, error) {
 	buf := bytes.Buffer{}
 	rls := ld.ResourceLogs()
 	for i := 0; i < rls.Len(); i++ {
 		rl := rls.At(i)
-		sourceCategory, exists := rl.Resource().Attributes().Get("_sourceCategory")
+		sourceCategory, exists := rl.Resource().Attributes().Get(SourceCategoryKey)
 		if exists == false {
 			logger.Errorf("_sourceCategory attribute does not exists")
 		}
-		sourceHost, exists := rl.Resource().Attributes().Get("_sourceHost")
+		sourceHost, exists := rl.Resource().Attributes().Get(SourceHostKey)
 		if exists == false {
 			logger.Errorf("_sourceHost attribute does not exists")
 		}
@@ -96,7 +102,7 @@ func (SumoICMarshaler) MarshalLogs(ld plog.Logs) ([]byte, error) {
 				lr := logs.At(k)
 				dateVal := lr.ObservedTimestamp()
 				body := attributeValueToString(lr.Body())
-				sourceName, exists := lr.Attributes().Get("log.file.path_resolved")
+				sourceName, exists := lr.Attributes().Get(SourceNameKey)
 				if exists == false {
 					logger.Errorf("_sourceName attribute does not exists")
 				}
