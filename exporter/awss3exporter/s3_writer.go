@@ -30,11 +30,6 @@ import (
 	"github.com/xitongsys/parquet-go/writer"
 )
 
-const (
-	jsonFormat    = "json"
-	parquetFormat = "parquet"
-)
-
 type S3Writer struct {
 }
 
@@ -55,11 +50,11 @@ func getTimeKey(partition string) string {
 	return timeKey
 }
 
-func getS3Key(bucket string, keyPrefix string, partition string, filePrefix string, fileformat string) string {
+func getS3Key(bucket string, keyPrefix string, partition string, filePrefix string, metadata string, fileformat string) string {
 	timeKey := getTimeKey(partition)
 	randomID := rand.Int()
 
-	s3Key := bucket + "/" + keyPrefix + "/" + timeKey + "/" + filePrefix + "_" + strconv.Itoa(randomID) + "." + fileformat
+	s3Key := bucket + "/" + keyPrefix + "/" + timeKey + "/" + filePrefix + metadata + "_" + strconv.Itoa(randomID) + "." + fileformat
 
 	return s3Key
 }
@@ -83,10 +78,10 @@ func (s3writer *S3Writer) parseParquetOutputSchema() (string, error) {
 	return string(content), nil
 }
 
-func (s3writer *S3Writer) WriteJson(buf []byte, config *Config) error {
+func (s3writer *S3Writer) WriteBuffer(buf []byte, ctx context.Context, config *Config, metadata string, format string) error {
 	key := getS3Key(config.S3Uploader.S3Bucket,
 		config.S3Uploader.S3Prefix, config.S3Uploader.S3Partition,
-		config.S3Uploader.FilePrefix, jsonFormat)
+		config.S3Uploader.FilePrefix, metadata, format)
 
 	// create a reader from data data in memory
 	reader := bytes.NewReader(buf)
@@ -113,9 +108,9 @@ func (s3writer *S3Writer) WriteJson(buf []byte, config *Config) error {
 	return nil
 }
 
-func (s3writer *S3Writer) WriteParquet(metrics []*ParquetMetric, ctx context.Context, config *Config) error {
+func (s3writer *S3Writer) WriteParquet(metrics []*ParquetMetric, ctx context.Context, config *Config, metadata string, format string) error {
 	key := getS3Key(config.S3Uploader.S3Bucket, config.S3Uploader.S3Prefix,
-		config.S3Uploader.S3Partition, config.S3Uploader.FilePrefix, parquetFormat)
+		config.S3Uploader.S3Partition, config.S3Uploader.FilePrefix, metadata, format)
 
 	// create new S3 file writer
 	fw, err := s3.NewS3FileWriter(ctx, config.S3Uploader.S3Bucket, key, "bucket-owner-full-control", nil, &aws.Config{
