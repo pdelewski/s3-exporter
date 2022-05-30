@@ -46,6 +46,7 @@ func TestLoadConfig(t *testing.T) {
 				S3Partition: "minute",
 			},
 			BatchCount:        1000,
+			MarshalerName:     "otlp_json",
 			MetricDescriptors: make([]MetricDescriptor, 0),
 		},
 	)
@@ -76,6 +77,7 @@ func TestConfig(t *testing.T) {
 				S3Partition: "minute",
 			},
 			BatchCount:        1000,
+			MarshalerName:     "otlp_json",
 			MetricDescriptors: make([]MetricDescriptor, 0),
 		},
 	)

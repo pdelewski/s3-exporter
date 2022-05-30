@@ -30,7 +30,7 @@ type TestWriter struct {
 	t *testing.T
 }
 
-func (testWriter *TestWriter) WriteParquet(metrics []*ParquetMetric, ctx context.Context, config *Config) error {
+func (testWriter *TestWriter) WriteParquet(metrics []*ParquetMetric, ctx context.Context, config *Config, metadata string, format string) error {
 	assert.Equal(testWriter.t, 1, len(metrics))
 	_, foundMetric := metrics[0].Metrics["int_sum"]
 	assert.Equal(testWriter.t, true, foundMetric)
@@ -38,7 +38,7 @@ func (testWriter *TestWriter) WriteParquet(metrics []*ParquetMetric, ctx context
 	return nil
 }
 
-func (testWriter *TestWriter) WriteJson(buf []byte, config *Config) error {
+func (testWriter *TestWriter) WriteBuffer(buf []byte, ctx context.Context, config *Config, metadata string, format string) error {
 	return nil
 }
 

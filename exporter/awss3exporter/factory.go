@@ -47,6 +47,7 @@ func createDefaultConfig() config.Exporter {
 		},
 
 		BatchCount:        1000,
+		MarshalerName:     "otlp_json",
 		MetricDescriptors: make([]MetricDescriptor, 0),
 		logger:            nil,
 	}
