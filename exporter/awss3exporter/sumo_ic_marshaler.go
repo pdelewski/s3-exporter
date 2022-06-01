@@ -1,12 +1,26 @@
+// Copyright 2022, OpenTelemetry Authors
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
 package awss3exporter
 
 import (
 	"bytes"
+	"errors"
 	"fmt"
 	"strconv"
 	"strings"
 
-	"github.com/scaleway/scaleway-sdk-go/logger"
 	"go.opentelemetry.io/collector/pdata/pcommon"
 	"go.opentelemetry.io/collector/pdata/plog"
 	"go.opentelemetry.io/collector/pdata/ptrace"
@@ -87,12 +101,12 @@ func (SumoICMarshaler) MarshalLogs(ld plog.Logs) ([]byte, error) {
 	for i := 0; i < rls.Len(); i++ {
 		rl := rls.At(i)
 		sourceCategory, exists := rl.Resource().Attributes().Get(SourceCategoryKey)
-		if exists == false {
-			logger.Errorf("_sourceCategory attribute does not exists")
+		if !exists {
+			return nil, errors.New("_sourceCategory attribute does not exists")
 		}
 		sourceHost, exists := rl.Resource().Attributes().Get(SourceHostKey)
-		if exists == false {
-			logger.Errorf("_sourceHost attribute does not exists")
+		if !exists {
+			return nil, errors.New("_sourceHost attribute does not exists")
 		}
 		ills := rl.ScopeLogs()
 		for j := 0; j < ills.Len(); j++ {
@@ -103,8 +117,8 @@ func (SumoICMarshaler) MarshalLogs(ld plog.Logs) ([]byte, error) {
 				dateVal := lr.ObservedTimestamp()
 				body := attributeValueToString(lr.Body())
 				sourceName, exists := lr.Attributes().Get(SourceNameKey)
-				if exists == false {
-					logger.Errorf("_sourceName attribute does not exists")
+				if !exists {
+					return nil, errors.New("_sourceName attribute does not exists")
 				}
 				logEntry(&buf, "{\"data\": \"%s\",\"sourceName\":\"%s\",\"sourceHost\":\"%s\",\"sourceCategory\":\"%s\",\"fields\":{},\"message\":\"%s\"}",
 					dateVal, attributeValueToString(sourceName), attributeValueToString(sourceHost), attributeValueToString(sourceCategory), body)

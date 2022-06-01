@@ -17,6 +17,6 @@ package awss3exporter
 import "context"
 
 type DataWriter interface {
-	WriteBuffer(buf []byte, ctx context.Context, config *Config, metadata string, format string) error
-	WriteParquet(metrics []*ParquetMetric, ctx context.Context, config *Config, metadata string, format string) error
+	WriteBuffer(ctx context.Context, buf []byte, config *Config, metadata string, format string) error
+	WriteParquet(ctx context.Context, metrics []*ParquetMetric, config *Config, metadata string, format string) error
 }

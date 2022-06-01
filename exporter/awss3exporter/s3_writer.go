@@ -59,26 +59,16 @@ func getS3Key(bucket string, keyPrefix string, partition string, filePrefix stri
 	return s3Key
 }
 
-// read input schema file and parse it to json structure
-func (s3writer *S3Writer) parseParquetInputSchema() (string, error) {
-	content, err := ioutil.ReadFile("./schema/parquet_input_schema")
-	if err != nil {
-		return string(""), nil
-	}
-
-	return string(content), nil
-}
-
 // read output schema file
 func (s3writer *S3Writer) parseParquetOutputSchema() (string, error) {
 	content, err := ioutil.ReadFile("./schema/parquet_output_schema")
 	if err != nil {
-		return string(""), nil
+		return string(""), err
 	}
 	return string(content), nil
 }
 
-func (s3writer *S3Writer) WriteBuffer(buf []byte, ctx context.Context, config *Config, metadata string, format string) error {
+func (s3writer *S3Writer) WriteBuffer(ctx context.Context, buf []byte, config *Config, metadata string, format string) error {
 	key := getS3Key(config.S3Uploader.S3Bucket,
 		config.S3Uploader.S3Prefix, config.S3Uploader.S3Partition,
 		config.S3Uploader.FilePrefix, metadata, format)
@@ -108,7 +98,7 @@ func (s3writer *S3Writer) WriteBuffer(buf []byte, ctx context.Context, config *C
 	return nil
 }
 
-func (s3writer *S3Writer) WriteParquet(metrics []*ParquetMetric, ctx context.Context, config *Config, metadata string, format string) error {
+func (s3writer *S3Writer) WriteParquet(ctx context.Context, metrics []*ParquetMetric, config *Config, metadata string, format string) error {
 	key := getS3Key(config.S3Uploader.S3Bucket, config.S3Uploader.S3Prefix,
 		config.S3Uploader.S3Partition, config.S3Uploader.FilePrefix, metadata, format)
 

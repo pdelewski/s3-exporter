@@ -47,9 +47,12 @@ func NewS3Exporter(config config.Exporter,
 	expConfig := config.(*Config)
 	expConfig.logger = logger
 
-	expConfig.Validate()
+	validateConfig := expConfig.Validate()
 
-	// TODO take marshaler from config
+	if validateConfig != nil {
+		return nil, validateConfig
+	}
+
 	marshaler, err := NewMarshaler(expConfig.MarshalerName, logger)
 	if err != nil {
 		return nil, errors.New("unknown marshaler")
@@ -102,8 +105,7 @@ func (e *S3Exporter) ConsumeMetrics(ctx context.Context, md pmetric.Metrics) err
 		rm := rms.At(i)
 		e.metricTranslator.translateOTelToParquetMetric(&rm, &parquetMetrics, expConfig)
 	}
-	e.dataWriter.WriteParquet(parquetMetrics, ctx, expConfig, "metrics", "parquet")
-	return nil
+	return e.dataWriter.WriteParquet(ctx, parquetMetrics, expConfig, "metrics", "parquet")
 }
 
 func (e *S3Exporter) ConsumeLogs(ctx context.Context, logs plog.Logs) error {
@@ -114,7 +116,7 @@ func (e *S3Exporter) ConsumeLogs(ctx context.Context, logs plog.Logs) error {
 	}
 	expConfig := e.config.(*Config)
 
-	return e.dataWriter.WriteBuffer(buf, ctx, expConfig, "logs", e.marshaler.Format())
+	return e.dataWriter.WriteBuffer(ctx, buf, expConfig, "logs", e.marshaler.Format())
 }
 
 func (e *S3Exporter) ConsumeTraces(ctx context.Context, traces ptrace.Traces) error {
@@ -124,7 +126,7 @@ func (e *S3Exporter) ConsumeTraces(ctx context.Context, traces ptrace.Traces) er
 	}
 	expConfig := e.config.(*Config)
 
-	return e.dataWriter.WriteBuffer(buf, ctx, expConfig, "traces", e.marshaler.Format())
+	return e.dataWriter.WriteBuffer(ctx, buf, expConfig, "traces", e.marshaler.Format())
 }
 
 func (e *S3Exporter) Shutdown(context.Context) error {
