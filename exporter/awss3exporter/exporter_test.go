@@ -16,12 +16,13 @@ package awss3exporter
 
 import (
 	"context"
+	"testing"
+	"time"
+
 	"github.com/stretchr/testify/assert"
 	"go.opentelemetry.io/collector/pdata/pcommon"
 	"go.opentelemetry.io/collector/pdata/pmetric"
 	"go.uber.org/zap"
-	"testing"
-	"time"
 )
 
 var testTimestamp = pcommon.Timestamp(time.Date(2022, 05, 17, 12, 30, 0, 0, time.UTC).UnixNano())
@@ -30,7 +31,7 @@ type TestWriter struct {
 	t *testing.T
 }
 
-func (testWriter *TestWriter) WriteParquet(metrics []*ParquetMetric, ctx context.Context, config *Config, metadata string, format string) error {
+func (testWriter *TestWriter) WriteParquet(ctx context.Context, metrics []*ParquetMetric, config *Config, metadata string, format string) error {
 	assert.Equal(testWriter.t, 1, len(metrics))
 	_, foundMetric := metrics[0].Metrics["int_sum"]
 	assert.Equal(testWriter.t, true, foundMetric)
@@ -38,7 +39,7 @@ func (testWriter *TestWriter) WriteParquet(metrics []*ParquetMetric, ctx context
 	return nil
 }
 
-func (testWriter *TestWriter) WriteBuffer(buf []byte, ctx context.Context, config *Config, metadata string, format string) error {
+func (testWriter *TestWriter) WriteBuffer(ctx context.Context, buf []byte, config *Config, metadata string, format string) error {
 	return nil
 }
 
@@ -70,7 +71,8 @@ func TestConsumeMetrics(t *testing.T) {
 	intSumDataPoint.SetIntVal(10)
 	intSumDataPoint.SetTimestamp(testTimestamp)
 
-	s3Exporter.ConsumeMetrics(context.Background(), md)
+	consumeResult := s3Exporter.ConsumeMetrics(context.Background(), md)
+	assert.NoError(t, consumeResult)
 	assert.NotNil(t, md, "failed to create metrics")
 
 }
