@@ -33,12 +33,8 @@ type S3UploaderConfig struct {
 type Config struct {
 	config.ExporterSettings `mapstructure:",squash"`
 
-	FileFormat    string           `mapstructure:"file_format"`
 	S3Uploader    S3UploaderConfig `mapstructure:"s3uploader"`
-	BatchCount    int64            `mapstructure:"batch_count"`
 	MarshalerName string           `mapstructure:"marshaler_name"`
-	// MetricDescriptors is the list of override metric descriptors
-	MetricDescriptors []MetricDescriptor `mapstructure:"metric_descriptors"`
 
 	// ResourceToTelemetrySettings is the option for converting resource attrihutes to telemetry attributes.
 	// "Enabled" - A boolean field to enable/disable this option. Default is `false`.

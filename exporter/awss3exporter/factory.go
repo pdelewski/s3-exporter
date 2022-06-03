@@ -32,7 +32,6 @@ func NewFactory() component.ExporterFactory {
 	return component.NewExporterFactory(
 		typeStr,
 		createDefaultConfig,
-		component.WithMetricsExporter(createMetricsExporter),
 		component.WithLogsExporter(createLogsExporter),
 		component.WithTracesExporter(createTracesExporter))
 }
@@ -46,26 +45,9 @@ func createDefaultConfig() config.Exporter {
 			S3Partition: "minute",
 		},
 
-		BatchCount:        1000,
-		MarshalerName:     "otlp_json",
-		MetricDescriptors: make([]MetricDescriptor, 0),
-		logger:            nil,
+		MarshalerName: "otlp_json",
+		logger:        nil,
 	}
-}
-
-func createMetricsExporter(ctx context.Context,
-	params component.ExporterCreateSettings,
-	config config.Exporter) (component.MetricsExporter, error) {
-
-	s3Exporter, err := NewS3Exporter(config, params)
-	if err != nil {
-		return nil, err
-	}
-
-	return exporterhelper.NewMetricsExporter(
-		config,
-		params,
-		s3Exporter.ConsumeMetrics)
 }
 
 func createLogsExporter(ctx context.Context,

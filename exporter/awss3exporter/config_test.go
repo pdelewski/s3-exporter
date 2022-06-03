@@ -46,9 +46,7 @@ func TestLoadConfig(t *testing.T) {
 				Region:      "us-east-1",
 				S3Partition: "minute",
 			},
-			BatchCount:        1000,
-			MarshalerName:     "otlp_json",
-			MetricDescriptors: make([]MetricDescriptor, 0),
+			MarshalerName: "otlp_json",
 		},
 	)
 }
@@ -77,9 +75,7 @@ func TestConfig(t *testing.T) {
 				S3Prefix:    "bar",
 				S3Partition: "minute",
 			},
-			BatchCount:        1000,
-			MarshalerName:     "otlp_json",
-			MetricDescriptors: make([]MetricDescriptor, 0),
+			MarshalerName: "otlp_json",
 		},
 	)
 }

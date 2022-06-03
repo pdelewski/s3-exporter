@@ -30,16 +30,6 @@ func TestCreateDefaultConfig(t *testing.T) {
 	assert.NoError(t, configtest.CheckConfigStruct(cfg))
 }
 
-func TestCreateMetricsExporter(t *testing.T) {
-	cfg := createDefaultConfig()
-	exp, err := createMetricsExporter(
-		context.Background(),
-		componenttest.NewNopExporterCreateSettings(),
-		cfg)
-	assert.NoError(t, err)
-	require.NotNil(t, exp)
-}
-
 func TestCreateTracesExporter(t *testing.T) {
 	cfg := createDefaultConfig()
 	exp, err := createTracesExporter(

@@ -18,7 +18,6 @@ import (
 	"bytes"
 	"context"
 	"fmt"
-	"io/ioutil"
 	"math/rand"
 	"strconv"
 	"time"
@@ -26,8 +25,6 @@ import (
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/s3/s3manager"
-	"github.com/xitongsys/parquet-go-source/s3"
-	"github.com/xitongsys/parquet-go/writer"
 )
 
 type S3Writer struct {
@@ -59,15 +56,6 @@ func getS3Key(bucket string, keyPrefix string, partition string, filePrefix stri
 	return s3Key
 }
 
-// read output schema file
-func (s3writer *S3Writer) parseParquetOutputSchema() (string, error) {
-	content, err := ioutil.ReadFile("./schema/parquet_output_schema")
-	if err != nil {
-		return string(""), err
-	}
-	return string(content), nil
-}
-
 func (s3writer *S3Writer) WriteBuffer(ctx context.Context, buf []byte, config *Config, metadata string, format string) error {
 	key := getS3Key(config.S3Uploader.S3Bucket,
 		config.S3Uploader.S3Prefix, config.S3Uploader.S3Partition,
@@ -95,44 +83,5 @@ func (s3writer *S3Writer) WriteBuffer(ctx context.Context, buf []byte, config *C
 		return err
 	}
 
-	return nil
-}
-
-func (s3writer *S3Writer) WriteParquet(ctx context.Context, metrics []*ParquetMetric, config *Config, metadata string, format string) error {
-	key := getS3Key(config.S3Uploader.S3Bucket, config.S3Uploader.S3Prefix,
-		config.S3Uploader.S3Partition, config.S3Uploader.FilePrefix, metadata, format)
-
-	// create new S3 file writer
-	fw, err := s3.NewS3FileWriter(ctx, config.S3Uploader.S3Bucket, key, "bucket-owner-full-control", nil, &aws.Config{
-		Region: aws.String(config.S3Uploader.Region)})
-	if err != nil {
-		return err
-	}
-	// create new parquet file writer
-	parquetOutputSchema, err := s3writer.parseParquetOutputSchema()
-	if err != nil {
-		return err
-	}
-	pw, err := writer.NewParquetWriter(fw, parquetOutputSchema, config.BatchCount)
-	if err != nil {
-		return err
-	}
-	for _, v := range metrics {
-		err = pw.Write(v)
-		if err != nil {
-			return err
-		}
-	}
-
-	err = pw.WriteStop()
-	if err != nil {
-		return err
-	}
-
-	err = fw.Close()
-
-	if err != nil {
-		return err
-	}
 	return nil
 }

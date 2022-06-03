@@ -21,19 +21,16 @@ import (
 	"go.opentelemetry.io/collector/component"
 	"go.opentelemetry.io/collector/config"
 	"go.opentelemetry.io/collector/consumer"
-	"go.opentelemetry.io/collector/pdata/pcommon"
 	"go.opentelemetry.io/collector/pdata/plog"
-	"go.opentelemetry.io/collector/pdata/pmetric"
 	"go.opentelemetry.io/collector/pdata/ptrace"
 	"go.uber.org/zap"
 )
 
 type S3Exporter struct {
-	config           config.Exporter
-	metricTranslator metricTranslator
-	dataWriter       DataWriter
-	logger           *zap.Logger
-	marshaler        Marshaler
+	config     config.Exporter
+	dataWriter DataWriter
+	logger     *zap.Logger
+	marshaler  Marshaler
 }
 
 func NewS3Exporter(config config.Exporter,
@@ -59,11 +56,10 @@ func NewS3Exporter(config config.Exporter,
 	}
 
 	s3Exporter := &S3Exporter{
-		config:           config,
-		metricTranslator: newMetricTranslator(*expConfig),
-		dataWriter:       &S3Writer{},
-		logger:           logger,
-		marshaler:        marshaler,
+		config:     config,
+		dataWriter: &S3Writer{},
+		logger:     logger,
+		marshaler:  marshaler,
 	}
 	return s3Exporter, nil
 }
@@ -74,38 +70,6 @@ func (e *S3Exporter) Capabilities() consumer.Capabilities {
 
 func (e *S3Exporter) Start(ctx context.Context, host component.Host) error {
 	return nil
-}
-
-func (e *S3Exporter) dumpLabels(md pmetric.Metrics) {
-	rms := md.ResourceMetrics()
-	labels := map[string]string{}
-
-	for i := 0; i < rms.Len(); i++ {
-		rm := rms.At(i)
-		am := rm.Resource().Attributes()
-		if am.Len() > 0 {
-			am.Range(func(k string, v pcommon.Value) bool {
-				labels[k] = v.StringVal()
-				return true
-			})
-		}
-	}
-
-	e.logger.Info("Processing resource metrics", zap.Any("labels", labels))
-}
-
-func (e *S3Exporter) ConsumeMetrics(ctx context.Context, md pmetric.Metrics) error {
-	e.dumpLabels(md)
-	rms := md.ResourceMetrics()
-
-	expConfig := e.config.(*Config)
-	var parquetMetrics []*ParquetMetric
-
-	for i := 0; i < rms.Len(); i++ {
-		rm := rms.At(i)
-		e.metricTranslator.translateOTelToParquetMetric(&rm, &parquetMetrics, expConfig)
-	}
-	return e.dataWriter.WriteParquet(ctx, parquetMetrics, expConfig, "metrics", "parquet")
 }
 
 func (e *S3Exporter) ConsumeLogs(ctx context.Context, logs plog.Logs) error {
