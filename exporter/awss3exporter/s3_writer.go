@@ -31,24 +31,23 @@ type S3Writer struct {
 }
 
 // generate the s3 time key based on partition configuration
-func getTimeKey(partition string) string {
+func getTimeKey(time time.Time, partition string) string {
 	var timeKey string
-	t := time.Now()
-	year, month, day := t.Date()
-	hour, minute, _ := t.Clock()
+	year, month, day := time.Date()
+	hour, minute, _ := time.Clock()
 
 	rand.Int()
 
 	if partition == "hour" {
-		timeKey = fmt.Sprintf("year=%d/month=%02d/day=%02d/hour=%02d/", year, month, day, hour)
+		timeKey = fmt.Sprintf("year=%d/month=%02d/day=%02d/hour=%02d", year, month, day, hour)
 	} else {
-		timeKey = fmt.Sprintf("year=%d/month=%02d/day=%02d/hour=%02d/minute=%02d/", year, month, day, hour, minute)
+		timeKey = fmt.Sprintf("year=%d/month=%02d/day=%02d/hour=%02d/minute=%02d", year, month, day, hour, minute)
 	}
 	return timeKey
 }
 
-func getS3Key(bucket string, keyPrefix string, partition string, filePrefix string, metadata string, fileformat string) string {
-	timeKey := getTimeKey(partition)
+func getS3Key(time time.Time, bucket string, keyPrefix string, partition string, filePrefix string, metadata string, fileformat string) string {
+	timeKey := getTimeKey(time, partition)
 	randomID := rand.Int()
 
 	s3Key := bucket + "/" + keyPrefix + "/" + timeKey + "/" + filePrefix + metadata + "_" + strconv.Itoa(randomID) + "." + fileformat
@@ -57,7 +56,8 @@ func getS3Key(bucket string, keyPrefix string, partition string, filePrefix stri
 }
 
 func (s3writer *S3Writer) WriteBuffer(ctx context.Context, buf []byte, config *Config, metadata string, format string) error {
-	key := getS3Key(config.S3Uploader.S3Bucket,
+	time := time.Now()
+	key := getS3Key(time, config.S3Uploader.S3Bucket,
 		config.S3Uploader.S3Prefix, config.S3Uploader.S3Partition,
 		config.S3Uploader.FilePrefix, metadata, format)
 
