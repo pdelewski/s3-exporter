@@ -22,11 +22,12 @@ import (
 // S3UploaderConfig contains aws s3 uploader related config to controls things
 // like bucket, prefix, batching, connections, retries, etc.
 type S3UploaderConfig struct {
-	Region      string `mapstructure:"region"`
-	S3Bucket    string `mapstructure:"s3_bucket"`
-	S3Prefix    string `mapstructure:"s3_prefix"`
-	S3Partition string `mapstructure:"s3_partition"`
-	FilePrefix  string `mapstructure:"file_prefix"`
+	Region         string `mapstructure:"region"`
+	S3Bucket       string `mapstructure:"s3_bucket"`
+	S3Prefix       string `mapstructure:"s3_prefix"`
+	S3Partition    string `mapstructure:"s3_partition"`
+	FilePrefix     string `mapstructure:"file_prefix"`
+	ShouldCompress bool   `mapstructure:"should_compress"`
 }
 
 // Config contains the main configuration options for the awskinesis exporter

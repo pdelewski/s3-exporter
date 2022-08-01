@@ -15,6 +15,9 @@
 package awss3exporter
 
 import (
+	"bytes"
+	"compress/gzip"
+	"io/ioutil"
 	"regexp"
 	"testing"
 	"time"
@@ -49,4 +52,23 @@ func TestS3Key(t *testing.T) {
 	s3Key := getS3Key(tm, "keyprefix", "minute", "fileprefix", "logs", "json")
 	matched := re.MatchString(s3Key)
 	assert.Equal(t, true, matched)
+}
+
+func TestCompression(t *testing.T) {
+	var testStr = "Hello World"
+
+	msg := []byte(testStr)
+	var compressedResp, compressedErr = compress(msg)
+	require.NoError(t, compressedErr)
+
+	var decompressResp, decompressedErr = gzip.NewReader(bytes.NewReader(compressedResp))
+	require.NoError(t, decompressedErr)
+
+	var buf []byte
+	var err error
+	buf, err = ioutil.ReadAll(decompressResp)
+	require.NoError(t, err)
+
+	var str = string(buf)
+	assert.Equal(t, testStr, str)
 }

@@ -16,6 +16,7 @@ package awss3exporter // import "github.com/open-telemetry/opentelemetry-collect
 
 import (
 	"bytes"
+	"compress/gzip"
 	"context"
 	"fmt"
 	"math/rand"
@@ -57,11 +58,35 @@ func getS3Key(time time.Time, keyPrefix string, partition string, filePrefix str
 	return s3Key
 }
 
+func compress(payload []byte) ([]byte, error) {
+	var buf bytes.Buffer
+	writer := gzip.NewWriter(&buf)
+	_, err := writer.Write(payload)
+	if err != nil {
+		return nil, err
+	}
+	err = writer.Close()
+	if err != nil {
+		return nil, err
+	}
+	return buf.Bytes(), nil
+}
+
 func (s3writer *S3Writer) WriteBuffer(ctx context.Context, buf []byte, config *Config, metadata string, format string) error {
 	time := time.Now()
 	key := getS3Key(time,
 		config.S3Uploader.S3Prefix, config.S3Uploader.S3Partition,
 		config.S3Uploader.FilePrefix, metadata, format)
+
+	if config.S3Uploader.ShouldCompress {
+		var bufferFromComrpession, errorFromCompression = compress(buf)
+
+		if errorFromCompression != nil {
+			return errorFromCompression
+		}
+
+		buf = bufferFromComrpession
+	}
 
 	// create a reader from data data in memory
 	reader := bytes.NewReader(buf)
